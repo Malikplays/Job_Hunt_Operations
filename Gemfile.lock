@@ -21,12 +21,12 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  nokogiri (~> 1.15)
+  nokogiri (~> 1.14)
   scraperwiki (~> 3.0)
   sqlite3 (~> 1.6.9)
 
 RUBY VERSION
-   ruby 2.7.8p225
+   ruby 2.6.6p146
 
 BUNDLED WITH
    1.17.3
