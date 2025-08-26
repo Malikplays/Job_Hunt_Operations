@@ -1,1 +1,41 @@
+name: Generate Bundler 1.x Gemfile.lock
+
+on:
+  workflow_dispatch: {}   # lets you run it manually from the Actions tab
+
+permissions:
+  contents: write         # needed to commit Gemfile.lock back to the repo
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby 2.7
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '2.7'
+
+      - name: Install Bundler 1.17.3
+        run: |
+          gem uninstall bundler -aIx || true
+          gem install bundler -v 1.17.3
+
+      - name: Generate Gemfile.lock (Bundler 1.17.3)
+        run: |
+          bundle _1.17.3_ install --without development test
+
+      - name: Commit lockfile if changed
+        run: |
+          if git status --porcelain | grep -q "Gemfile.lock"; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add Gemfile.lock
+            git commit -m "Add Gemfile.lock (Bundler 1.17.3) for Morph.io"
+            git push
+          else
+            echo "No changes to commit."
+          fi
 
