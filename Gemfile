@@ -1,11 +1,11 @@
 ruby "2.6.6"
 source "https://rubygems.org"
 
-# Nokogiri pinned below 1.15 so it works with Ruby 2.6
-gem "nokogiri", ">= 1.14.0", "< 1.15.0"
+# Nokogiri pinned to a Ruby 2.6–compatible version
+gem "nokogiri", "= 1.13.10"
 
-# SQLite pinned to 1.6.x (1.7.x requires Ruby >= 3.0)
+# SQLite pinned so it doesn't jump to Ruby 3–only releases
 gem "sqlite3", "~> 1.6.9"
 
-# ScraperWiki helper for Morph.io
+# Morph.io SQLite helper
 gem "scraperwiki", "~> 3.0"
