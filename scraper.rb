@@ -2,9 +2,10 @@
 
 require "uri"
 require "cgi"
-require "http"          # fast, simple HTTP client
-require "nokogiri"      # HTML parser
-require "scraperwiki"   # Morph.io SQLite helper
+require "net/http"
+require "openssl"
+require "nokogiri"
+require "scraperwiki"
 
 GOOGLE_SEARCH_URL = "https://www.google.com/search"
 
@@ -18,9 +19,9 @@ HEADERS = {
 PARAMS = {
   q: QUERY,
   hl: "en",
-  num: "10",     # usually 10 per page
-  start: "0",    # first page
-  filter: "0"    # include similar results
+  num: "10",     # first page (Google caps at ~10)
+  start: "0",
+  filter: "0"
 }.freeze
 
 def build_url(base, params)
@@ -29,14 +30,22 @@ def build_url(base, params)
   uri.to_s
 end
 
-def fetch_html(url)
-  resp = HTTP.headers(HEADERS).get(url)
-  raise "HTTP #{resp.status}" unless resp.status.success?
-  resp.to_s
+def http_get(url, headers = {})
+  uri = URI(url)
+  http = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl = (uri.scheme == "https")
+  http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+
+  req = Net::HTTP::Get.new(uri.request_uri)
+  headers.each { |k, v| req[k] = v }
+
+  res = http.request(req)
+  raise "HTTP #{res.code}" unless res.is_a?(Net::HTTPSuccess)
+  res.body
 end
 
 def google_redirect_to_real(url)
-  # Google wraps result links like: /url?q=https://real.example&sa=...
+  # e.g. /url?q=https://real.example&sa=...
   return url unless url.start_with?("/url?")
   u = URI.parse(url)
   qs = CGI.parse(u.query.to_s)
@@ -47,18 +56,16 @@ rescue
 end
 
 def extract_snippet(card)
-  # Try common snippet containers; Google changes these often
   %w[VwiC3b aCOpRe IsZvec].each do |klass|
     node = card.at_css(".#{klass}")
-    return node.text.strip.gsub(/\s+/, " ") if node && node.text
+    txt = node&.text&.strip
+    return txt.gsub(/\s+/, " ") if txt && !txt.empty?
   end
 
-  # Conservative fallback: any shortish text block inside card
   card.css("div").each do |div|
     txt = div.text.to_s.strip.gsub(/\s+/, " ")
     return txt if txt.length.between?(30, 500)
   end
-
   nil
 end
 
@@ -66,9 +73,7 @@ def parse_results(html)
   doc = Nokogiri::HTML(html)
   results = []
 
-  # Prefer explicit result cards
   cards = doc.css("div.g")
-  # Fallback: anchors with an h3 title (Google often uses this)
   cards = doc.css("a:has(h3)") if cards.empty?
 
   rank = 0
@@ -80,13 +85,11 @@ def parse_results(html)
     title = h3.text.to_s.strip.gsub(/\s+/, " ")
     link  = a["href"].to_s
 
-    # Unwrap Google redirect links and skip internal links
     if link.start_with?("/url?")
       link = google_redirect_to_real(link)
     elsif link.start_with?("/")
       link = nil
     end
-
     next if title.empty? || link.nil?
 
     rank += 1
@@ -112,9 +115,9 @@ def save_results(rows)
 end
 
 def main
-  url   = build_url(GOOGLE_SEARCH_URL, PARAMS)
-  html  = fetch_html(url)
-  rows  = parse_results(html)
+  url  = build_url(GOOGLE_SEARCH_URL, PARAMS)
+  html = http_get(url, HEADERS)
+  rows = parse_results(html)
   save_results(rows)
   puts "Saved #{rows.length} results from the first page."
 end
