@@ -1,0 +1,29 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    httpclient (2.9.0)
+      mutex_m
+    mini_portile2 (2.8.9)
+    mutex_m (0.3.0)
+    nokogiri (1.15.7)
+      mini_portile2 (~> 2.8.2)
+      racc (~> 1.4)
+    racc (1.8.1)
+    scraperwiki (3.0.2)
+      httpclient
+      sqlite_magic
+    sqlite3 (1.6.9)
+      mini_portile2 (~> 2.8.0)
+    sqlite_magic (0.0.6)
+      sqlite3
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  nokogiri (~> 1.15)
+  scraperwiki (~> 3.0)
+  sqlite3 (~> 1.6.9)
+
+BUNDLED WITH
+   1.17.3
