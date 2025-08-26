@@ -1,7 +1,7 @@
 name: Generate Bundler 1.x Gemfile.lock
 
 on:
-  workflow_dispatch: {}   # enables the "Run workflow" button in Actions
+  workflow_dispatch: {}
   push:
     paths:
       - Gemfile
@@ -21,6 +21,11 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '2.7'
+
+      # Upgrade RubyGems so older runners don't choke on transitive deps
+      - name: Upgrade RubyGems (>= 3.3.22)
+        run: |
+          gem update --system 3.3.26
 
       - name: Install Bundler 1.17.3
         run: |
