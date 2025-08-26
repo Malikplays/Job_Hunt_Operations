@@ -1,38 +1,19 @@
-name: Generate Bundler 1.x Gemfile.lock
-
-on:
-  workflow_dispatch: {}
-  push:
-    paths:
-      - Gemfile
-      - .github/workflows/generate-lockfile.yml
-
-permissions:
-  contents: write
-
-jobs:
-  lockfile:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo (full history so rebase works)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Set up Ruby 2.6.6 (exact)
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '2.6.6'   # <-- exact patch to match Gemfile & Morph
+          ruby-version: '2.6.6'
 
       - name: Install Bundler 1.17.3
         run: |
           gem uninstall bundler -aIx || true
           gem install bundler -v 1.17.3
 
-      # Create lockfile only (no install/build)
-      - name: Create Gemfile.lock with Bundler 1.17.3
+      # Force-resolve nokogiri to 1.14.x and add platforms
+      - name: Create Gemfile.lock with Bundler 1.17.3 (nokogiri 1.14.x)
         run: |
+          bundle _1.17.3_ lock --update nokogiri
           bundle _1.17.3_ lock --add-platform ruby
+          bundle _1.17.3_ lock --add-platform x86_64-linux
 
       - name: Commit, rebase onto latest, and push
         env:
@@ -43,7 +24,7 @@ jobs:
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
             git add Gemfile.lock
-            git commit -m "Add Gemfile.lock (Bundler 1.17.3, Ruby 2.6.6 exact)" || true
+            git commit -m "Lock nokogiri to 1.14.x for Ruby 2.6.6" || true
 
             git fetch origin "$TARGET_BRANCH"
             git pull --rebase origin "$TARGET_BRANCH"
