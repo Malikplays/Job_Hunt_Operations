@@ -1,10 +1,14 @@
 name: Generate Bundler 1.x Gemfile.lock
 
 on:
-  workflow_dispatch: {}   # lets you run it manually from the Actions tab
+  workflow_dispatch: {}   # enables the "Run workflow" button in Actions
+  push:
+    paths:
+      - Gemfile
+      - .github/workflows/generate-lockfile.yml
 
 permissions:
-  contents: write         # needed to commit Gemfile.lock back to the repo
+  contents: write
 
 jobs:
   lockfile:
@@ -38,4 +42,3 @@ jobs:
           else
             echo "No changes to commit."
           fi
-
