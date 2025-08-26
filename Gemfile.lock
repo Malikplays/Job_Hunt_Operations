@@ -5,25 +5,29 @@ GEM
       mutex_m
     mini_portile2 (2.8.9)
     mutex_m (0.3.0)
-    nokogiri (1.15.7)
-      mini_portile2 (~> 2.8.2)
+    nokogiri (1.13.10)
+      mini_portile2 (~> 2.8.0)
+      racc (~> 1.4)
+    nokogiri (1.13.10-x86_64-linux)
       racc (~> 1.4)
     racc (1.8.1)
     scraperwiki (3.0.2)
       httpclient
       sqlite_magic
-    sqlite3 (1.6.9)
+    sqlite3 (1.5.4)
       mini_portile2 (~> 2.8.0)
+    sqlite3 (1.5.4-x86_64-linux)
     sqlite_magic (0.0.6)
       sqlite3
 
 PLATFORMS
   ruby
+  x86_64-linux
 
 DEPENDENCIES
-  nokogiri (~> 1.14)
+  nokogiri (= 1.13.10)
   scraperwiki (~> 3.0)
-  sqlite3 (~> 1.6.9)
+  sqlite3 (~> 1.5.4)
 
 RUBY VERSION
    ruby 2.6.6p146
